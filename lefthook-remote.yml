@@ -1,0 +1,10 @@
+---
+pre-commit:
+  commands:
+    typos:
+      run: timeout ${LEFTHOOK_TYPOS_TIMEOUT:-30} typos {staged_files}
+
+pre-push:
+  commands:
+    typos:
+      run: timeout ${LEFTHOOK_TYPOS_TIMEOUT:-30} typos {push_files}
