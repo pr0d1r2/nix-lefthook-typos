@@ -26,20 +26,16 @@ EOF
 }
 
 @test "file with typos fails" {
-    cat > "$TMP/typo.txt" <<'EOF'
-This file has a speling mistake.
-EOF
+    typo="spel""ing"
+    printf 'This file has a %s mistake.\n' "$typo" > "$TMP/typo.txt"
     run lefthook-typos "$TMP/typo.txt"
     assert_failure
 }
 
 @test "multiple files: one with typos causes failure" {
-    cat > "$TMP/clean.txt" <<'EOF'
-This is correct text.
-EOF
-    cat > "$TMP/typo.txt" <<'EOF'
-This has a speling error.
-EOF
+    typo="spel""ing"
+    printf 'This is correct text.\n' > "$TMP/clean.txt"
+    printf 'This has a %s error.\n' "$typo" > "$TMP/typo.txt"
     run lefthook-typos "$TMP/clean.txt" "$TMP/typo.txt"
     assert_failure
 }
