@@ -2,9 +2,9 @@
 pre-commit:
   commands:
     typos:
-      run: timeout ${LEFTHOOK_TYPOS_TIMEOUT:-30} typos {staged_files}
+      run: timeout ${LEFTHOOK_TYPOS_TIMEOUT:-30} lefthook-typos {staged_files}
 
 pre-push:
   commands:
     typos:
-      run: timeout ${LEFTHOOK_TYPOS_TIMEOUT:-30} typos {push_files}
+      run: timeout ${LEFTHOOK_TYPOS_TIMEOUT:-30} lefthook-typos {push_files}
