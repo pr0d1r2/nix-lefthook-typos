@@ -92,3 +92,5 @@ This registers `typos` commands for both `pre-commit` and `pre-push`.
 3. **`lefthook-remote.yml` uses `lefthook-typos` command name**: The remote config assumes the consumer has `lefthook-typos` on PATH (via the flake package). If a consumer adds the remote without the flake input, the command will fail with "command not found". The local `lefthook.yml` uses bare `typos` instead, creating an asymmetry between local and remote configs.
 
 4. **No `_typos.toml` for the project itself**: The project has no typos configuration file, meaning any false positives in the project's own files (or future files) cannot be suppressed without adding one.
+
+5. **CI `fatal: $HOME not set`**: `dev.sh` ran `lefthook install` unconditionally; in nix build sandboxes `$HOME` is unset, causing git to abort. Fixed by guarding with `[ -n "${HOME:-}" ]`.
