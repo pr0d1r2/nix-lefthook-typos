@@ -56,6 +56,13 @@ teardown() {
     assert [ ! -f "$LEFTHOOK_LOG" ]
 }
 
+@test "does not overwrite BATS_LIB_PATH when already set" {
+    cd "$TMPDIR/repo"
+    run bash -c 'export BATS_LIB_PATH="/custom/path"; source "$1"; echo "$BATS_LIB_PATH"' -- "$TMPDIR/dev.sh"
+    assert_success
+    assert_output "/custom/path"
+}
+
 @test "skips lefthook install when hooks exist" {
     cd "$TMPDIR/repo"
     # shellcheck disable=SC2031
