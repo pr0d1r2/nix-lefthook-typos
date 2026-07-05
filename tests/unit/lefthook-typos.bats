@@ -52,3 +52,26 @@ EOF
     run lefthook-typos /nonexistent/file.txt "$TMP/typo.txt"
     assert_failure
 }
+
+@test "symlink to clean file is checked and passes" {
+    printf 'This is correct text.\n' > "$TMP/clean.txt"
+    ln -s "$TMP/clean.txt" "$TMP/link_clean.txt"
+    run lefthook-typos "$TMP/link_clean.txt"
+    assert_success
+}
+
+@test "symlink to file with typos is checked and fails" {
+    typo="spel""ing"
+    printf 'This has a %s error.\n' "$typo" > "$TMP/typo.txt"
+    ln -s "$TMP/typo.txt" "$TMP/link_typo.txt"
+    run lefthook-typos "$TMP/link_typo.txt"
+    assert_failure
+}
+
+@test "broken symlink is skipped" {
+    printf 'placeholder\n' > "$TMP/target.txt"
+    ln -s "$TMP/target.txt" "$TMP/link_broken.txt"
+    rm "$TMP/target.txt"
+    run lefthook-typos "$TMP/link_broken.txt"
+    assert_success
+}
