@@ -39,3 +39,16 @@ EOF
     run lefthook-typos "$TMP/clean.txt" "$TMP/typo.txt"
     assert_failure
 }
+
+@test "mixed existent and non-existent: clean existent file passes" {
+    printf 'This is correct text.\n' > "$TMP/clean.txt"
+    run lefthook-typos /nonexistent/file.txt "$TMP/clean.txt"
+    assert_success
+}
+
+@test "mixed existent and non-existent: existent file with typos fails" {
+    typo="spel""ing"
+    printf 'This has a %s error.\n' "$typo" > "$TMP/typo.txt"
+    run lefthook-typos /nonexistent/file.txt "$TMP/typo.txt"
+    assert_failure
+}

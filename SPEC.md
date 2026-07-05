@@ -74,7 +74,7 @@ This registers `typos` commands for both `pre-commit` and `pre-push`.
 
 | status | id | goal |
 |---|---|---|
-| `.` | T1 | Add bats test for mixed existent and non-existent files (only non-existent skipped, existent still checked) |
+| `x` | T1 | Add bats test for mixed existent and non-existent files (only non-existent skipped, existent still checked) |
 | `.` | T2 | Add bats test for `dev.sh` verifying `BATS_LIB_PATH` is not overwritten when already set |
 | `.` | T3 | Add bats test for symlink handling in `lefthook-typos.sh` (symlinks to files should be checked) |
 | `.` | T4 | Add `flake.lock` to `.envrc` `watch_file` entries so direnv reloads on dependency updates |
