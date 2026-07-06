@@ -94,3 +94,5 @@ This registers `typos` commands for both `pre-commit` and `pre-push`.
 4. **No `_typos.toml` for the project itself**: The project has no typos configuration file, meaning any false positives in the project's own files (or future files) cannot be suppressed without adding one.
 
 5. **CI `fatal: $HOME not set`**: `dev.sh` ran `lefthook install` unconditionally; in nix build sandboxes `$HOME` is unset, causing git to abort. Fixed by guarding with `[ -n "${HOME:-}" ]`.
+
+6. **CI `markdownlint: No such file or directory`**: `lefthook.yml` referenced `markdownlint` but `pkgs.markdownlint-cli` was not in `flake.nix` `ciPackages`, so it was missing from both devShells. Fixed by adding `pkgs.markdownlint-cli` to `ciPackages`.
