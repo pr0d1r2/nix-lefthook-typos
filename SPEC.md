@@ -80,7 +80,7 @@ This registers `typos` commands for both `pre-commit` and `pre-push`.
 | `x` | T4 | Add `flake.lock` to `.envrc` `watch_file` entries so direnv reloads on dependency updates |
 | `x` | T5 | Add `dev.sh` to `.envrc` `watch_file` entries so direnv reloads on shell hook changes |
 | `x` | T6 | Add `markdownlint` lefthook check for `.md` files (linter exists in config but no lefthook command) |
-| `.` | T7 | Document the full list of lefthook remote checks in README.md |
+| `x` | T7 | Document the full list of lefthook remote checks in README.md |
 | `.` | T8 | Add a `_typos.toml` config file for project-specific typos exclusions |
 
 ## §B — Bugs / Known Issues
