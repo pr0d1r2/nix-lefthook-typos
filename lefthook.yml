@@ -73,9 +73,15 @@ pre-commit:
   commands:
     typos:
       run: timeout ${LEFTHOOK_TYPOS_TIMEOUT:-30} typos {staged_files}
+    markdownlint:
+      glob: "*.md"
+      run: timeout ${LEFTHOOK_MARKDOWNLINT_TIMEOUT:-30} markdownlint {staged_files}
 
 pre-push:
   parallel: true
   commands:
     typos:
       run: timeout ${LEFTHOOK_TYPOS_TIMEOUT:-30} typos {push_files}
+    markdownlint:
+      glob: "*.md"
+      run: timeout ${LEFTHOOK_MARKDOWNLINT_TIMEOUT:-30} markdownlint {push_files}
