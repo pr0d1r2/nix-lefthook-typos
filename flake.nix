@@ -49,6 +49,7 @@
             inherit pkgs inputs;
             ciPackages = [
               pkgs.markdownlint-cli
+              pkgs.taplo
               self.packages.${system}.default
             ];
             shellHook = builtins.replaceStrings [ "@BATS_LIB_PATH@" ] [ "${shells.batsWithLibs}" ] (
