@@ -9,3 +9,8 @@ setup() {
     run grep -q 'watch_file flake.lock' .envrc
     assert_success
 }
+
+@test "watches dev.sh for changes" {
+    run grep -q 'watch_file dev.sh' .envrc
+    assert_success
+}
