@@ -48,6 +48,7 @@
           shells = nix-dev-shell-agentic.lib.mkShells {
             inherit pkgs inputs;
             ciPackages = [
+              pkgs.markdownlint-cli
               self.packages.${system}.default
             ];
             shellHook = builtins.replaceStrings [ "@BATS_LIB_PATH@" ] [ "${shells.batsWithLibs}" ] (

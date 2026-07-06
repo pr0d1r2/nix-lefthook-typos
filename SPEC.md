@@ -24,7 +24,7 @@ nix-lefthook-typos is a Nix flake that packages the [typos](https://github.com/c
 
 ### CLI command
 
-```
+```text
 lefthook-typos [file ...]
 ```
 
@@ -79,7 +79,7 @@ This registers `typos` commands for both `pre-commit` and `pre-push`.
 | `x` | T3 | Add bats test for symlink handling in `lefthook-typos.sh` (symlinks to files should be checked) |
 | `x` | T4 | Add `flake.lock` to `.envrc` `watch_file` entries so direnv reloads on dependency updates |
 | `x` | T5 | Add `dev.sh` to `.envrc` `watch_file` entries so direnv reloads on shell hook changes |
-| `.` | T6 | Add `markdownlint` lefthook check for `.md` files (linter exists in config but no lefthook command) |
+| `x` | T6 | Add `markdownlint` lefthook check for `.md` files (linter exists in config but no lefthook command) |
 | `.` | T7 | Document the full list of lefthook remote checks in README.md |
 | `.` | T8 | Add a `_typos.toml` config file for project-specific typos exclusions |
 
@@ -94,3 +94,5 @@ This registers `typos` commands for both `pre-commit` and `pre-push`.
 4. **No `_typos.toml` for the project itself**: The project has no typos configuration file, meaning any false positives in the project's own files (or future files) cannot be suppressed without adding one.
 
 5. **CI `fatal: $HOME not set`**: `dev.sh` ran `lefthook install` unconditionally; in nix build sandboxes `$HOME` is unset, causing git to abort. Fixed by guarding with `[ -n "${HOME:-}" ]`.
+
+6. **CI `markdownlint: No such file or directory`**: `lefthook.yml` referenced `markdownlint` but `pkgs.markdownlint-cli` was not in `flake.nix` `ciPackages`, so it was missing from both devShells. Fixed by adding `pkgs.markdownlint-cli` to `ciPackages`.
