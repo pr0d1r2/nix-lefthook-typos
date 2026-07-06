@@ -76,6 +76,9 @@ pre-commit:
     markdownlint:
       glob: "*.md"
       run: timeout ${LEFTHOOK_MARKDOWNLINT_TIMEOUT:-30} markdownlint {staged_files}
+    taplo:
+      glob: "*.toml"
+      run: timeout ${LEFTHOOK_TAPLO_TIMEOUT:-30} taplo format --check {staged_files}
 
 pre-push:
   parallel: true
@@ -85,3 +88,6 @@ pre-push:
     markdownlint:
       glob: "*.md"
       run: timeout ${LEFTHOOK_MARKDOWNLINT_TIMEOUT:-30} markdownlint {push_files}
+    taplo:
+      glob: "*.toml"
+      run: timeout ${LEFTHOOK_TAPLO_TIMEOUT:-30} taplo format --check {push_files}

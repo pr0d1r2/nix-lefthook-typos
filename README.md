@@ -87,6 +87,7 @@ This project enforces code quality via [lefthook](https://github.com/evilmartian
 |---|---|
 | typos | Spell checker for source code and docs |
 | markdownlint | Markdown style and syntax linter |
+| taplo | TOML format checker |
 
 ## Development
 
