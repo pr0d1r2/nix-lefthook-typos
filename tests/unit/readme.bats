@@ -104,6 +104,11 @@ setup() {
     assert_success
 }
 
+@test "README documents taplo local command" {
+    run bash -c "sed -n '/## Lefthook checks/,\$p' '$README' | grep -q 'taplo'"
+    assert_success
+}
+
 @test "all lefthook.yml remotes are documented in README" {
     run bash -c "grep 'git_url:' '$LEFTHOOK' | sed 's|.*pr0d1r2/||' | while read -r name; do grep -q \"\$name\" '$README' || { echo \"missing: \$name\"; exit 1; }; done"
     assert_success
