@@ -57,17 +57,19 @@ This registers `typos` commands for both `pre-commit` and `pre-push`.
 | Variable | Default | Description |
 |---|---|---|
 | `LEFTHOOK_TYPOS_TIMEOUT` | `30` | Timeout in seconds for the typos command |
+| `LEFTHOOK_TAPLO_TIMEOUT` | `30` | Timeout in seconds for the taplo command |
 | `BATS_LIB_PATH` | Set by dev shell | Path to bats support/assert libraries |
 
 ### Config files
 
 | File | Format | Purpose |
 |---|---|---|
-| `lefthook.yml` | YAML | Local lefthook config with 16 remote check suites and local typos check |
+| `lefthook.yml` | YAML | Local lefthook config with 16 remote check suites and local typos, markdownlint, taplo checks |
 | `lefthook-remote.yml` | YAML | Exported config for consumers using lefthook remotes |
 | `.yamllint.yml` | YAML | yamllint config (disables line-length, truthy key check) |
 | `.markdownlint.yml` | YAML | markdownlint config (disables line-length MD013) |
 | `.editorconfig` | INI | Editor formatting rules |
+| `_typos.toml` | TOML | Project-specific typos exclusions (extend-words) |
 | `config/lefthook/file_size_limits.yml` | YAML | Per-extension file size limits for the file-size-check hook |
 
 ## §T — Tasks
@@ -81,7 +83,7 @@ This registers `typos` commands for both `pre-commit` and `pre-push`.
 | `x` | T5 | Add `dev.sh` to `.envrc` `watch_file` entries so direnv reloads on shell hook changes |
 | `x` | T6 | Add `markdownlint` lefthook check for `.md` files (linter exists in config but no lefthook command) |
 | `x` | T7 | Document the full list of lefthook remote checks in README.md |
-| `.` | T8 | Add a `_typos.toml` config file for project-specific typos exclusions |
+| `x` | T8 | Add a `_typos.toml` config file for project-specific typos exclusions |
 
 ## §B — Bugs / Known Issues
 
