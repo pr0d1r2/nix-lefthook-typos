@@ -13,6 +13,10 @@
       url = "github:pr0d1r2/nix-dev-shell-agentic";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nix-lefthook-markdownlint-agentic = {
+      url = "github:pr0d1r2/nix-lefthook-markdownlint-agentic";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
