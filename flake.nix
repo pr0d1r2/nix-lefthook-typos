@@ -42,6 +42,11 @@
     in
     {
       packages = forAllSystems (pkgs: {
+        default = pkgs.writeShellApplication {
+          name = "lefthook-typos";
+          runtimeInputs = [ pkgs.typos ];
+          text = builtins.readFile ./lefthook-typos.sh;
+        };
         setting = (set-and-setting.lib.mkSetting { inherit pkgs; }).materialized;
       });
 
@@ -51,7 +56,7 @@
           mat = set-and-setting.lib.materializationFor { inherit pkgs fragments; };
           sys = pkgs.stdenv.hostPlatform.system;
         in
-        set-and-setting.lib.mkDevShells {
+        (set-and-setting.lib.mkDevShells {
           inherit pkgs;
           basePackages = mat.packages;
           settingHook = ''
@@ -64,6 +69,9 @@
             cp -f "$_assemble_out/lefthook.yml" lefthook.yml
             rm -rf "$_assemble_out"
           '';
+        })
+        // {
+          ci = self.devShells.${sys}.agentic;
         }
       );
 
@@ -78,6 +86,8 @@
             inherit pkgs;
             projectRoot = ./.;
           };
+          consumer-package = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
+          consumer-ci-shell = self.devShells.${pkgs.stdenv.hostPlatform.system}.ci;
           default = pkgs.runCommand "checks" { } "touch $out";
         }
       );
