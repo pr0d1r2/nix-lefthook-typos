@@ -90,12 +90,12 @@ This registers `typos` commands for both `pre-commit` and `pre-push`.
 ## §B — Bugs / Known Issues
 
 1. **`.envrc` missing `watch_file` entries**: The `.envrc` only contains `use flake` but does not `watch_file` for `flake.nix`, `flake.lock`, `dev.sh`, or any nix modules. The `direnv` skill requires watching flake and its dependent files for change-triggered reloads.
-   Without these, changing `dev.sh` or `flake.nix` requires a manual `direnv reload`.
+    Without these, changing `dev.sh` or `flake.nix` requires a manual `direnv reload`.
 
 2. **Symlinks pass the `-f` check but may point to deleted targets**: `lefthook-typos.sh` uses `[ -f "$f" ]` which follows symlinks. A broken symlink (target deleted) is correctly skipped, but a valid symlink to a file is included — this is correct behavior but untested.
 
 3. **`lefthook-remote.yml` uses `lefthook-typos` command name**: The remote config assumes the consumer has `lefthook-typos` on PATH (via the flake package). If a consumer adds the remote without the flake input, the command will fail with "command not found".
-   The local `lefthook.yml` uses bare `typos` instead, creating an asymmetry between local and remote configs.
+    The local `lefthook.yml` uses bare `typos` instead, creating an asymmetry between local and remote configs.
 
 4. **No `_typos.toml` for the project itself**: The project has no typos configuration file, meaning any false positives in the project's own files (or future files) cannot be suppressed without adding one.
 
@@ -104,7 +104,10 @@ This registers `typos` commands for both `pre-commit` and `pre-push`.
 6. **CI `markdownlint: No such file or directory`**: `lefthook.yml` referenced `markdownlint` but `pkgs.markdownlint-cli` was not in `flake.nix` `ciPackages`, so it was missing from both devShells. Fixed by adding `pkgs.markdownlint-cli` to `ciPackages`.
 
 7. **CI `lefthook-markdownlint-agentic: No such file or directory`**: `lefthook.yml` referenced the `lefthook-markdownlint-agentic` command, but the pinned `nix-dev-shell-agentic` does not provide that wrapper, so it was absent from both devShells (exit 127).
-   Fixed by adding the `nix-lefthook-markdownlint-agentic` flake input; `mkShells` auto-includes any consumer input prefixed `nix-lefthook-`, so its `lefthook-markdownlint-agentic` package lands on `PATH`.
+    Fixed by adding the `nix-lefthook-markdownlint-agentic` flake input; `mkShells` auto-includes any consumer input prefixed `nix-lefthook-`, so its `lefthook-markdownlint-agentic` package lands on `PATH`.
 
 8. **CI `markdownlint MD013/line-length` on `SPEC.md`**: The CI action runs `lefthook run pre-commit --all-files`, so `markdownlint` lints `SPEC.md` under `.markdownlint.yml` (line length 300). Several `SPEC.md` prose lines exceeded 300 characters, failing the check alongside the agentic command above.
-   Fixed by reflowing the over-long `§D` paragraph and `§B` entries to stay within the limit; no linter rule was relaxed.
+    Fixed by reflowing the over-long `§D` paragraph and `§B` entries to stay within the limit; no linter rule was relaxed.
+
+9. **CI coherence wrappers missing from the confirm app PATH**: The `confirm` app assembled hooks for the selected fragments but its `runtimeInputs` contained only generic shell tools, leaving `lefthook-markdownlint`, `lefthook-markdownlint-agentic`, and `lefthook-yamllint` unavailable.
+    Fixed by adding the fragment materialization's packages to the app runtime so every assembled hook command is present by construction, and removing the now-redundant standalone wrapper inputs.
