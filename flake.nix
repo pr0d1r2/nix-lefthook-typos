@@ -7,10 +7,13 @@
   };
 
   inputs = {
-    nixpkgs-lock.url = "github:pr0d1r2/nixpkgs-lock";
-    nixpkgs.follows = "nixpkgs-lock/nixpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-    set-and-setting.url = "github:pr0d1r2/set-and-setting";
+    set-and-setting = {
+      url = "github:pr0d1r2/set-and-setting";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs-lock.follows = "nixpkgs";
+    };
 
   };
 
