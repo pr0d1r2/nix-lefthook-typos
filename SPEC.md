@@ -111,3 +111,6 @@ This registers `typos` commands for both `pre-commit` and `pre-push`.
 
 9. **CI coherence wrappers missing from the confirm app PATH**: The `confirm` app assembled hooks for the selected fragments but its `runtimeInputs` contained only generic shell tools, leaving `lefthook-markdownlint`, `lefthook-markdownlint-agentic`, and `lefthook-yamllint` unavailable.
     Fixed by adding the fragment materialization's packages to the app runtime so every assembled hook command is present by construction, and removing the now-redundant standalone wrapper inputs.
+
+10. **Pin refresh made `flake.lock` exceed the file-size guardrail**: Independent recursive `nixpkgs-lock` and `set-and-setting` inputs duplicated the transitive flake graph, growing the lockfile to 120,413 bytes.
+    Fixed by pinning `nixpkgs` directly and making both compatibility inputs of `set-and-setting` follow it, reducing the lock graph without relaxing the 65,536-byte limit.
