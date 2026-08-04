@@ -24,16 +24,8 @@
       set-and-setting,
       ...
     }:
-    let
-      supportedSystems = [
-        "aarch64-darwin"
-        "x86_64-darwin"
-        "x86_64-linux"
-        "aarch64-linux"
-      ];
-      forAllSystems =
-        f: nixpkgs.lib.genAttrs supportedSystems (system: f nixpkgs.legacyPackages.${system});
-
+    set-and-setting.lib.mkConsumerFlake {
+      inherit self nixpkgs set-and-setting;
       fragments = [
         "base"
         "nix"
@@ -42,89 +34,13 @@
         "markdown"
         "yaml"
       ];
-    in
-    {
-      packages = forAllSystems (pkgs: {
+      src = ./.;
+      extraPackages = pkgs: {
         default = pkgs.writeShellApplication {
           name = "lefthook-typos";
           runtimeInputs = [ pkgs.typos ];
           text = builtins.readFile ./lefthook-typos.sh;
         };
-        setting = (set-and-setting.lib.mkSetting { inherit pkgs; }).materialized;
-      });
-
-      devShells = forAllSystems (
-        pkgs:
-        let
-          mat = set-and-setting.lib.materializationFor { inherit pkgs fragments; };
-          sys = pkgs.stdenv.hostPlatform.system;
-        in
-        (set-and-setting.lib.mkDevShells {
-          inherit pkgs;
-          basePackages = mat.packages;
-          settingHook = ''
-            ${self.packages.${sys}.setting}/bin/sync-setting .
-            _assemble_out="$(mktemp -d)"
-            FRAGMENTS="${builtins.concatStringsSep " " fragments}" \
-              out="$_assemble_out" \
-              FRAGMENTS_DIR="${set-and-setting}/setting/integrations/lefthook" \
-              bash "${set-and-setting}/setting/lib/assemble-lefthook.sh"
-            cp -f "$_assemble_out/lefthook.yml" lefthook.yml
-            rm -rf "$_assemble_out"
-          '';
-        })
-        // {
-          ci = self.devShells.${sys}.agentic;
-        }
-      );
-
-      checks = forAllSystems (
-        pkgs:
-        (set-and-setting.lib.checksFor {
-          inherit pkgs fragments;
-          src = ./.;
-        })
-        // {
-          dep-graph = set-and-setting.lib.mkDepGraphCheck {
-            inherit pkgs;
-            projectRoot = ./.;
-          };
-          consumer-package = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
-          consumer-ci-shell = self.devShells.${pkgs.stdenv.hostPlatform.system}.ci;
-          default = pkgs.runCommand "checks" { } "touch $out";
-        }
-      );
-
-      apps = forAllSystems (
-        pkgs:
-        let
-          mat = set-and-setting.lib.materializationFor { inherit pkgs fragments; };
-        in
-        {
-          confirm = {
-            type = "app";
-            program = "${
-              pkgs.writeShellApplication {
-                name = "confirm";
-                runtimeInputs = mat.packages ++ [
-                  pkgs.diffutils
-                  pkgs.findutils
-                  pkgs.gawk
-                  pkgs.gnugrep
-                ];
-                runtimeEnv = {
-                  FRAGMENTS_DIR = "${set-and-setting}/setting/integrations/lefthook";
-                  ASSEMBLE_SCRIPT = "${set-and-setting}/setting/lib/assemble-lefthook.sh";
-                  DETECT_SCRIPT = "${set-and-setting}/setting/lib/detect-fragments.sh";
-                  SETTING_SRC = "${self.packages.${pkgs.stdenv.hostPlatform.system}.setting}";
-                  CONFIRM_SCRIPT = "${set-and-setting}/lib/confirm.sh";
-                  CONFIRM_REV = set-and-setting.rev or "unknown";
-                };
-                text = builtins.readFile ./confirm.sh;
-              }
-            }/bin/confirm";
-          };
-        }
-      );
+      };
     };
 }

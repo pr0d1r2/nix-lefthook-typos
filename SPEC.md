@@ -114,3 +114,5 @@ This registers `typos` commands for both `pre-commit` and `pre-push`.
 
 10. **Pin refresh made `flake.lock` exceed the file-size guardrail**: Independent recursive `nixpkgs-lock` and `set-and-setting` inputs duplicated the transitive flake graph, growing the lockfile to 120,413 bytes.
     Fixed by pinning `nixpkgs` directly and making both compatibility inputs of `set-and-setting` follow it, reducing the lock graph without relaxing the 65,536-byte limit.
+
+11. **CI flake manifest rejected `let` outputs**: Fixed with `set-and-setting.lib.mkConsumerFlake`.
