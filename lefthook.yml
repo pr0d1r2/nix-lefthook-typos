@@ -14,6 +14,9 @@ pre-commit:
     markdownlint-agentic:
       glob: "*.md"
       run: timeout ${LEFTHOOK_MARKDOWNLINT_AGENTIC_TIMEOUT:-30} lefthook-markdownlint-agentic {staged_files}
+    taplo:
+      glob: "*.toml"
+      run: timeout ${LEFTHOOK_TAPLO_TIMEOUT:-30} taplo format --check {staged_files}
     yamllint:
       glob: "*.{yml,yaml}"
       run: timeout ${LEFTHOOK_YAMLLINT_TIMEOUT:-30} lefthook-yamllint {staged_files}
@@ -26,6 +29,9 @@ pre-push:
     markdownlint-agentic:
       glob: "*.md"
       run: timeout ${LEFTHOOK_MARKDOWNLINT_AGENTIC_TIMEOUT:-30} lefthook-markdownlint-agentic {push_files}
+    taplo:
+      glob: "*.toml"
+      run: timeout ${LEFTHOOK_TAPLO_TIMEOUT:-30} taplo format --check {push_files}
     yamllint:
       glob: "*.{yml,yaml}"
       run: timeout ${LEFTHOOK_YAMLLINT_TIMEOUT:-30} lefthook-yamllint {push_files}
