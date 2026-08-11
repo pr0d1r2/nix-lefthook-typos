@@ -13,8 +13,10 @@ setup() {
     [ -f "$MARKDOWNLINT" ]
 }
 
-@test "disables MD013 line length" {
-    run grep 'MD013: false' "$MARKDOWNLINT"
+@test "configures MD013 line length" {
+    run grep -q 'MD013:' "$MARKDOWNLINT"
+    assert_success
+    run grep -q 'line_length: 300' "$MARKDOWNLINT"
     assert_success
 }
 
