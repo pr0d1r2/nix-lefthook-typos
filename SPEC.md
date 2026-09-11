@@ -2,18 +2,18 @@
 
 ## §D — Description
 
-nix-lefthook-typos is a Nix flake that packages the [typos](https://github.com/crate-ci/typos) spell checker as a lefthook-compatible git hook command.
-It wraps `typos` in a shell script (`lefthook-typos`) that filters out non-existent files from the staged/pushed file list, exits cleanly when no files remain, and delegates to `typos` for actual spell checking.
-The project targets Nix-based development environments on Linux and macOS (amd64/arm64) and can be consumed either as a lefthook remote (zero flake config) or as a direct flake input added to a project's devShell.
+nix-lefthook-typos is a Nix flake that packages the [typos](https://github.com/crate-ci/typos) spell checker as a lefthook-compatible command.
+It wraps `typos` in `lefthook-typos`, filtering non-existent files from the staged/pushed list, exiting cleanly when none remain, and delegating to `typos` for spell checking.
+The project targets Nix-based environments on Linux and macOS (amd64/arm64), and can be used as a lefthook remote or direct flake input.
 
 ## §V — Invariants
 
 1. `lefthook-typos` exits 0 when called with no arguments.
-2. `lefthook-typos` exits 0 when all arguments are non-existent files.
+2. `lefthook-typos` exits 0 when all arguments are missing files.
 3. `lefthook-typos` exits 0 when all existing files pass the typos check.
 4. `lefthook-typos` exits non-zero when any existing file contains a typo.
-5. The flake builds on all four supported systems: `aarch64-darwin`, `x86_64-darwin`, `x86_64-linux`, `aarch64-linux`.
-6. Every shell script has a matching bats unit test file under `tests/unit/`.
+5. The flake builds on: `aarch64-darwin`, `x86_64-darwin`, `x86_64-linux`, `aarch64-linux`.
+6. Every shell script has a matching bats test under `tests/unit/`.
 7. All lefthook checks run on both `pre-commit` (staged files) and `pre-push` (push files).
 8. Every lefthook command has a timeout (default 30s, configurable via `LEFTHOOK_TYPOS_TIMEOUT`).
 9. Shell scripts contain no functions; logic is in separate scripts invoked inline.
@@ -89,13 +89,11 @@ This registers `typos` commands for both `pre-commit` and `pre-push`.
 
 ## §B — Bugs / Known Issues
 
-1. **`.envrc` missing `watch_file` entries**: The `.envrc` only contains `use flake` but does not `watch_file` for `flake.nix`, `flake.lock`, `dev.sh`, or any nix modules. The `direnv` skill requires watching flake and its dependent files for change-triggered reloads.
-    Without these, changing `dev.sh` or `flake.nix` requires a manual `direnv reload`.
+1. **`.envrc` missing `watch_file` entries**: The `.envrc` only contains `use flake`; changing `dev.sh` or `flake.nix` therefore requires a manual `direnv reload`.
 
-2. **Symlinks pass the `-f` check but may point to deleted targets**: `lefthook-typos.sh` uses `[ -f "$f" ]` which follows symlinks. A broken symlink (target deleted) is correctly skipped, but a valid symlink to a file is included — this is correct behavior but untested.
+2. **Symlink handling is untested**: `lefthook-typos.sh` uses `[ -f "$f" ]`, so valid symlinks are included and broken ones skipped.
 
-3. **`lefthook-remote.yml` uses `lefthook-typos` command name**: The remote config assumes the consumer has `lefthook-typos` on PATH (via the flake package). If a consumer adds the remote without the flake input, the command will fail with "command not found".
-    The local `lefthook.yml` uses bare `typos` instead, creating an asymmetry between local and remote configs.
+3. **Remote command availability**: `lefthook-remote.yml` assumes `lefthook-typos` is on PATH via the flake package; without the input it fails. The local config uses bare `typos`.
 
 4. **No `_typos.toml` for the project itself**: The project has no typos configuration file, meaning any false positives in the project's own files (or future files) cannot be suppressed without adding one.
 
