@@ -560,9 +560,30 @@
         "type": "github"
       }
     },
+    "nixpkgs-lock": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1788963280,
+        "narHash": "sha256-NT6y9iY2v39kwnz+c93IqSKdOejUHGX98uY9FV3Wm0w=",
+        "owner": "pr0d1r2",
+        "repo": "nixpkgs-lock",
+        "rev": "bc959d5383276fa7a3a0948010e1ed2a24ace5af",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pr0d1r2",
+        "repo": "nixpkgs-lock",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "nixpkgs": "nixpkgs",
+        "nixpkgs-lock": "nixpkgs-lock",
         "set-and-setting": "set-and-setting"
       }
     },
@@ -606,7 +627,7 @@
           "nixpkgs"
         ],
         "nixpkgs-lock": [
-          "nixpkgs"
+          "nixpkgs-lock"
         ]
       },
       "locked": {

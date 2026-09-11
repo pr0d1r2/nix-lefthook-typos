@@ -8,11 +8,15 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs-lock = {
+      url = "github:pr0d1r2/nixpkgs-lock";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     set-and-setting = {
       url = "github:pr0d1r2/set-and-setting";
       inputs.nixpkgs.follows = "nixpkgs";
-      inputs.nixpkgs-lock.follows = "nixpkgs";
+      inputs.nixpkgs-lock.follows = "nixpkgs-lock";
     };
 
   };
@@ -33,6 +37,7 @@
         "ascii"
         "markdown"
         "yaml"
+        "toml"
       ];
       src = ./.;
       extraPackages = pkgs: {

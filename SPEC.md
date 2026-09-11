@@ -116,3 +116,5 @@ This registers `typos` commands for both `pre-commit` and `pre-push`.
     Fixed by pinning `nixpkgs` directly and making both compatibility inputs of `set-and-setting` follow it, reducing the lock graph without relaxing the 65,536-byte limit.
 
 11. **CI flake manifest rejected `let` outputs**: Fixed with `set-and-setting.lib.mkConsumerFlake`.
+
+12. **Guardrails rejected the lock graph and lefthook fidelity**: The consumer flake omitted the required explicit `nixpkgs-lock` node and did not select the `toml` fragment despite its repo-local Taplo hook. Fixed by adding the shared lock input with `follows` and including the `toml` fragment.
