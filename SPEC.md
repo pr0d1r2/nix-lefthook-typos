@@ -120,3 +120,9 @@ This registers `typos` commands for both `pre-commit` and `pre-push`.
 13. **CI Bats could not find `lefthook-typos`**: The executable was exposed only as the default package, but the consumer dev shell used by the guardrail suite does not add that package to `PATH`. Fixed by exposing it under its executable name through `extraPackages`.
 
 14. **Template flake description**: `CHANGEME` failed metadata validation. Fixed with a project-specific description.
+
+15. **Guardrail Bats tools missing from the consumer devShell**: The CI suite
+    invokes `lefthook-typos` and `taplo` directly, but `extraPackages` only
+    exposed the former as a flake package and the standard materialization only
+    exposed the latter through its wrapper. Fixed by adding both executables to
+    every consumer devShell.

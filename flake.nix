@@ -28,29 +28,45 @@
       set-and-setting,
       ...
     }:
-    set-and-setting.lib.mkConsumerFlake {
-      inherit self nixpkgs set-and-setting;
-      fragments = [
-        "base"
-        "nix"
-        "shell"
-        "ascii"
-        "markdown"
-        "yaml"
-        "toml"
-      ];
-      src = ./.;
-      extraPackages = pkgs: {
-        default = pkgs.writeShellApplication {
-          name = "lefthook-typos";
-          runtimeInputs = [ pkgs.typos ];
-          text = builtins.readFile ./lefthook-typos.sh;
-        };
-        lefthook-typos = pkgs.writeShellApplication {
-          name = "lefthook-typos";
-          runtimeInputs = [ pkgs.typos ];
-          text = builtins.readFile ./lefthook-typos.sh;
+    let
+      consumer = set-and-setting.lib.mkConsumerFlake {
+        inherit self nixpkgs set-and-setting;
+        fragments = [
+          "base"
+          "nix"
+          "shell"
+          "ascii"
+          "markdown"
+          "yaml"
+          "toml"
+        ];
+        src = ./.;
+        extraPackages = pkgs: {
+          default = pkgs.writeShellApplication {
+            name = "lefthook-typos";
+            runtimeInputs = [ pkgs.typos ];
+            text = builtins.readFile ./lefthook-typos.sh;
+          };
+          lefthook-typos = pkgs.writeShellApplication {
+            name = "lefthook-typos";
+            runtimeInputs = [ pkgs.typos ];
+            text = builtins.readFile ./lefthook-typos.sh;
+          };
         };
       };
+      addConsumerTools =
+        system: shell:
+        shell.overrideAttrs (old: {
+          buildInputs = (old.buildInputs or [ ]) ++ [
+            nixpkgs.legacyPackages.${system}.taplo
+            consumer.packages.${system}.lefthook-typos
+          ];
+        });
+    in
+    consumer
+    // {
+      devShells = builtins.mapAttrs (
+        system: shells: builtins.mapAttrs (_name: shell: addConsumerTools system shell) shells
+      ) consumer.devShells;
     };
 }
