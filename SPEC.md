@@ -2,25 +2,25 @@
 
 ## §D — Description
 
-nix-lefthook-typos is a Nix flake that packages the [typos](https://github.com/crate-ci/typos) spell checker as a lefthook-compatible git hook command.
-It wraps `typos` in a shell script (`lefthook-typos`) that filters out non-existent files from the staged/pushed file list, exits cleanly when no files remain, and delegates to `typos` for actual spell checking.
-The project targets Nix-based development environments on Linux and macOS (amd64/arm64) and can be consumed either as a lefthook remote (zero flake config) or as a direct flake input added to a project's devShell.
+nix-lefthook-typos is a Nix flake packaging the [typos](https://github.com/crate-ci/typos) spell checker as a lefthook-compatible command.
+It wraps `typos` in `lefthook-typos`, filtering missing staged/pushed files, exiting cleanly when none remain, and delegating to `typos`.
+The project targets Nix-based environments on Linux and macOS (amd64/arm64), and can be used as a lefthook remote or direct flake input.
 
 ## §V — Invariants
 
 1. `lefthook-typos` exits 0 when called with no arguments.
-2. `lefthook-typos` exits 0 when all arguments are non-existent files.
+2. `lefthook-typos` exits 0 when all arguments are missing files.
 3. `lefthook-typos` exits 0 when all existing files pass the typos check.
 4. `lefthook-typos` exits non-zero when any existing file contains a typo.
-5. The flake builds on all four supported systems: `aarch64-darwin`, `x86_64-darwin`, `x86_64-linux`, `aarch64-linux`.
-6. Every shell script has a matching bats unit test file under `tests/unit/`.
-7. All lefthook checks run on both `pre-commit` (staged files) and `pre-push` (push files).
+5. The flake builds on: `aarch64-darwin`, `x86_64-darwin`, `x86_64-linux`, `aarch64-linux`.
+6. Every shell script has a matching bats test under `tests/unit/`.
+7. All lefthook checks run on both `pre-commit` (staged) and `pre-push` (push) files.
 8. Every lefthook command has a timeout (default 30s, configurable via `LEFTHOOK_TYPOS_TIMEOUT`).
 9. Shell scripts contain no functions; logic is in separate scripts invoked inline.
 10. Nix files contain no embedded shell; shell code is extracted to `.sh` files and read with `builtins.readFile`.
 11. CI runs on both Ubuntu (always) and macOS (push/dispatch only).
 12. All files conform to editorconfig: UTF-8, LF line endings, 2-space indent, final newline, no trailing whitespace.
-13. The dev shell installs lefthook hooks on first entry when `.git/hooks/pre-commit` is absent.
+13. The dev shell installs lefthook hooks on first entry when the pre-commit hook is absent.
 
 ## §I — Interfaces
 
@@ -89,30 +89,40 @@ This registers `typos` commands for both `pre-commit` and `pre-push`.
 
 ## §B — Bugs / Known Issues
 
-1. **`.envrc` missing `watch_file` entries**: The `.envrc` only contains `use flake` but does not `watch_file` for `flake.nix`, `flake.lock`, `dev.sh`, or any nix modules. The `direnv` skill requires watching flake and its dependent files for change-triggered reloads.
-    Without these, changing `dev.sh` or `flake.nix` requires a manual `direnv reload`.
+1. **`.envrc` missing `watch_file` entries**: The `.envrc` only contains `use flake`; changing `dev.sh` or `flake.nix` therefore requires a manual `direnv reload`.
 
-2. **Symlinks pass the `-f` check but may point to deleted targets**: `lefthook-typos.sh` uses `[ -f "$f" ]` which follows symlinks. A broken symlink (target deleted) is correctly skipped, but a valid symlink to a file is included — this is correct behavior but untested.
+2. **Symlink handling is untested**: `lefthook-typos.sh` uses `[ -f "$f" ]`, so valid symlinks are included and broken ones skipped.
 
-3. **`lefthook-remote.yml` uses `lefthook-typos` command name**: The remote config assumes the consumer has `lefthook-typos` on PATH (via the flake package). If a consumer adds the remote without the flake input, the command will fail with "command not found".
-    The local `lefthook.yml` uses bare `typos` instead, creating an asymmetry between local and remote configs.
+3. **Remote command availability**: `lefthook-remote.yml` assumes the flake package puts `lefthook-typos` on PATH; without the input it fails. The local config uses bare `typos`.
 
 4. **No `_typos.toml` for the project itself**: The project has no typos configuration file, meaning any false positives in the project's own files (or future files) cannot be suppressed without adding one.
 
-5. **CI `fatal: $HOME not set`**: `dev.sh` ran `lefthook install` unconditionally; in nix build sandboxes `$HOME` is unset, causing git to abort. Fixed by guarding with `[ -n "${HOME:-}" ]`.
+5. **CI `fatal: $HOME not set`**: `dev.sh` ran `lefthook install` unconditionally; in Nix sandboxes `$HOME` is unset, so git aborts. Fixed by guarding with `[ -n "${HOME:-}" ]`.
 
-6. **CI `markdownlint: No such file or directory`**: `lefthook.yml` referenced `markdownlint` but `pkgs.markdownlint-cli` was not in `flake.nix` `ciPackages`, so it was missing from both devShells. Fixed by adding `pkgs.markdownlint-cli` to `ciPackages`.
+6. **CI `markdownlint: No such file or directory`**: `lefthook.yml` referenced `markdownlint`, but it was missing from both devShells. Fixed by adding `pkgs.markdownlint-cli` to `ciPackages`.
 
-7. **CI `lefthook-markdownlint-agentic: No such file or directory`**: `lefthook.yml` referenced the `lefthook-markdownlint-agentic` command, but the pinned `nix-dev-shell-agentic` does not provide that wrapper, so it was absent from both devShells (exit 127).
-    Fixed by adding the `nix-lefthook-markdownlint-agentic` flake input; `mkShells` auto-includes any consumer input prefixed `nix-lefthook-`, so its `lefthook-markdownlint-agentic` package lands on `PATH`.
+7. **CI `lefthook-markdownlint-agentic: No such file or directory`**: `lefthook.yml` referenced this command, but the pinned `nix-dev-shell-agentic` does not provide it (exit 127).
+    Fixed by adding `nix-lefthook-markdownlint-agentic`; `mkShells` includes `nix-lefthook-*` inputs, putting its package on `PATH`.
 
-8. **CI `markdownlint MD013/line-length` on `SPEC.md`**: The CI action runs `lefthook run pre-commit --all-files`, so `markdownlint` lints `SPEC.md` under `.markdownlint.yml` (line length 300). Several `SPEC.md` prose lines exceeded 300 characters, failing the check alongside the agentic command above.
+8. **CI `markdownlint MD013/line-length` on `SPEC.md`**: CI runs `lefthook run pre-commit --all-files`, so `markdownlint` lints `SPEC.md` under `.markdownlint.yml` (line length 300). Several prose lines exceeded 300 characters.
     Fixed by reflowing the over-long `§D` paragraph and `§B` entries to stay within the limit; no linter rule was relaxed.
 
-9. **CI coherence wrappers missing from the confirm app PATH**: The `confirm` app assembled hooks for the selected fragments but its `runtimeInputs` contained only generic shell tools, leaving `lefthook-markdownlint`, `lefthook-markdownlint-agentic`, and `lefthook-yamllint` unavailable.
-    Fixed by adding the fragment materialization's packages to the app runtime so every assembled hook command is present by construction, and removing the now-redundant standalone wrapper inputs.
+9. **CI coherence wrappers missing from the confirm app PATH**: The `confirm` app assembled hooks but its `runtimeInputs` lacked `lefthook-markdownlint`, `lefthook-markdownlint-agentic`, and `lefthook-yamllint`.
+    Fixed by adding fragment packages to the app runtime and removing redundant wrapper inputs.
 
 10. **Pin refresh made `flake.lock` exceed the file-size guardrail**: Independent recursive `nixpkgs-lock` and `set-and-setting` inputs duplicated the transitive flake graph, growing the lockfile to 120,413 bytes.
     Fixed by pinning `nixpkgs` directly and making both compatibility inputs of `set-and-setting` follow it, reducing the lock graph without relaxing the 65,536-byte limit.
 
 11. **CI flake manifest rejected `let` outputs**: Fixed with `set-and-setting.lib.mkConsumerFlake`.
+
+12. **Guardrails rejected the lock graph and lefthook fidelity**: The consumer flake omitted the required explicit `nixpkgs-lock` node and did not select the `toml` fragment despite its repo-local Taplo hook. Fixed by adding the shared lock input with `follows` and including the `toml` fragment.
+
+13. **CI Bats could not find `lefthook-typos`**: The executable was exposed only as the default package, but the consumer dev shell used by the guardrail suite does not add that package to `PATH`. Fixed by exposing it under its executable name through `extraPackages`.
+
+14. **Template flake description**: `CHANGEME` failed metadata validation. Fixed with a project-specific description.
+
+15. **Guardrail Bats tools missing from the consumer devShell**: The CI suite
+    invokes `lefthook-typos` and `taplo` directly, but `extraPackages` only
+    exposed the former as a flake package and the standard materialization only
+    exposed the latter through its wrapper. Fixed by adding both executables to
+    every consumer devShell.
