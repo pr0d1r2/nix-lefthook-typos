@@ -28,8 +28,21 @@
       set-and-setting,
       ...
     }:
-    let
-      consumer = set-and-setting.lib.mkConsumerFlake {
+    (consumer: consumer // {
+      devShells = builtins.mapAttrs (
+        system: shells:
+        builtins.mapAttrs (
+          _name: shell:
+          shell.overrideAttrs (old: {
+            buildInputs = (old.buildInputs or [ ]) ++ [
+              nixpkgs.legacyPackages.${system}.taplo
+              consumer.packages.${system}.lefthook-typos
+            ];
+          })
+        ) shells
+      ) consumer.devShells;
+    })
+    (set-and-setting.lib.mkConsumerFlake {
         inherit self nixpkgs set-and-setting;
         fragments = [
           "base"
@@ -53,20 +66,6 @@
             text = builtins.readFile ./lefthook-typos.sh;
           };
         };
-      };
-      addConsumerTools =
-        system: shell:
-        shell.overrideAttrs (old: {
-          buildInputs = (old.buildInputs or [ ]) ++ [
-            nixpkgs.legacyPackages.${system}.taplo
-            consumer.packages.${system}.lefthook-typos
-          ];
-        });
-    in
-    consumer
-    // {
-      devShells = builtins.mapAttrs (
-        system: shells: builtins.mapAttrs (_name: shell: addConsumerTools system shell) shells
-      ) consumer.devShells;
-    };
+      }
+    );
 }
