@@ -46,6 +46,11 @@
           runtimeInputs = [ pkgs.typos ];
           text = builtins.readFile ./lefthook-typos.sh;
         };
+        lefthook-typos = pkgs.writeShellApplication {
+          name = "lefthook-typos";
+          runtimeInputs = [ pkgs.typos ];
+          text = builtins.readFile ./lefthook-typos.sh;
+        };
       };
     };
 }

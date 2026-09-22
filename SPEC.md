@@ -116,3 +116,5 @@ This registers `typos` commands for both `pre-commit` and `pre-push`.
 11. **CI flake manifest rejected `let` outputs**: Fixed with `set-and-setting.lib.mkConsumerFlake`.
 
 12. **Guardrails rejected the lock graph and lefthook fidelity**: The consumer flake omitted the required explicit `nixpkgs-lock` node and did not select the `toml` fragment despite its repo-local Taplo hook. Fixed by adding the shared lock input with `follows` and including the `toml` fragment.
+
+13. **CI Bats could not find `lefthook-typos`**: The executable was exposed only as the default package, but the consumer dev shell used by the guardrail suite does not add that package to `PATH`. Fixed by exposing it under its executable name through `extraPackages`.
