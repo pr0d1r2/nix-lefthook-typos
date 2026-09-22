@@ -2,8 +2,8 @@
 
 ## §D — Description
 
-nix-lefthook-typos is a Nix flake that packages the [typos](https://github.com/crate-ci/typos) spell checker as a lefthook-compatible command.
-It wraps `typos` in `lefthook-typos`, filtering non-existent files from the staged/pushed list, exiting cleanly when none remain, and delegating to `typos` for spell checking.
+nix-lefthook-typos is a Nix flake packaging the [typos](https://github.com/crate-ci/typos) spell checker as a lefthook-compatible command.
+It wraps `typos` in `lefthook-typos`, filtering missing staged/pushed files, exiting cleanly when none remain, and delegating to `typos`.
 The project targets Nix-based environments on Linux and macOS (amd64/arm64), and can be used as a lefthook remote or direct flake input.
 
 ## §V — Invariants
@@ -14,13 +14,13 @@ The project targets Nix-based environments on Linux and macOS (amd64/arm64), and
 4. `lefthook-typos` exits non-zero when any existing file contains a typo.
 5. The flake builds on: `aarch64-darwin`, `x86_64-darwin`, `x86_64-linux`, `aarch64-linux`.
 6. Every shell script has a matching bats test under `tests/unit/`.
-7. All lefthook checks run on both `pre-commit` (staged files) and `pre-push` (push files).
+7. All lefthook checks run on both `pre-commit` (staged) and `pre-push` (push) files.
 8. Every lefthook command has a timeout (default 30s, configurable via `LEFTHOOK_TYPOS_TIMEOUT`).
 9. Shell scripts contain no functions; logic is in separate scripts invoked inline.
 10. Nix files contain no embedded shell; shell code is extracted to `.sh` files and read with `builtins.readFile`.
 11. CI runs on both Ubuntu (always) and macOS (push/dispatch only).
 12. All files conform to editorconfig: UTF-8, LF line endings, 2-space indent, final newline, no trailing whitespace.
-13. The dev shell installs lefthook hooks on first entry when `.git/hooks/pre-commit` is absent.
+13. The dev shell installs lefthook hooks on first entry when the pre-commit hook is absent.
 
 ## §I — Interfaces
 
@@ -93,22 +93,22 @@ This registers `typos` commands for both `pre-commit` and `pre-push`.
 
 2. **Symlink handling is untested**: `lefthook-typos.sh` uses `[ -f "$f" ]`, so valid symlinks are included and broken ones skipped.
 
-3. **Remote command availability**: `lefthook-remote.yml` assumes `lefthook-typos` is on PATH via the flake package; without the input it fails. The local config uses bare `typos`.
+3. **Remote command availability**: `lefthook-remote.yml` assumes the flake package puts `lefthook-typos` on PATH; without the input it fails. The local config uses bare `typos`.
 
 4. **No `_typos.toml` for the project itself**: The project has no typos configuration file, meaning any false positives in the project's own files (or future files) cannot be suppressed without adding one.
 
-5. **CI `fatal: $HOME not set`**: `dev.sh` ran `lefthook install` unconditionally; in nix build sandboxes `$HOME` is unset, causing git to abort. Fixed by guarding with `[ -n "${HOME:-}" ]`.
+5. **CI `fatal: $HOME not set`**: `dev.sh` ran `lefthook install` unconditionally; in Nix sandboxes `$HOME` is unset, so git aborts. Fixed by guarding with `[ -n "${HOME:-}" ]`.
 
-6. **CI `markdownlint: No such file or directory`**: `lefthook.yml` referenced `markdownlint` but `pkgs.markdownlint-cli` was not in `flake.nix` `ciPackages`, so it was missing from both devShells. Fixed by adding `pkgs.markdownlint-cli` to `ciPackages`.
+6. **CI `markdownlint: No such file or directory`**: `lefthook.yml` referenced `markdownlint`, but it was missing from both devShells. Fixed by adding `pkgs.markdownlint-cli` to `ciPackages`.
 
-7. **CI `lefthook-markdownlint-agentic: No such file or directory`**: `lefthook.yml` referenced the `lefthook-markdownlint-agentic` command, but the pinned `nix-dev-shell-agentic` does not provide that wrapper, so it was absent from both devShells (exit 127).
-    Fixed by adding the `nix-lefthook-markdownlint-agentic` flake input; `mkShells` auto-includes any consumer input prefixed `nix-lefthook-`, so its `lefthook-markdownlint-agentic` package lands on `PATH`.
+7. **CI `lefthook-markdownlint-agentic: No such file or directory`**: `lefthook.yml` referenced this command, but the pinned `nix-dev-shell-agentic` does not provide it (exit 127).
+    Fixed by adding `nix-lefthook-markdownlint-agentic`; `mkShells` includes `nix-lefthook-*` inputs, putting its package on `PATH`.
 
-8. **CI `markdownlint MD013/line-length` on `SPEC.md`**: The CI action runs `lefthook run pre-commit --all-files`, so `markdownlint` lints `SPEC.md` under `.markdownlint.yml` (line length 300). Several `SPEC.md` prose lines exceeded 300 characters, failing the check alongside the agentic command above.
+8. **CI `markdownlint MD013/line-length` on `SPEC.md`**: CI runs `lefthook run pre-commit --all-files`, so `markdownlint` lints `SPEC.md` under `.markdownlint.yml` (line length 300). Several prose lines exceeded 300 characters.
     Fixed by reflowing the over-long `§D` paragraph and `§B` entries to stay within the limit; no linter rule was relaxed.
 
-9. **CI coherence wrappers missing from the confirm app PATH**: The `confirm` app assembled hooks for the selected fragments but its `runtimeInputs` contained only generic shell tools, leaving `lefthook-markdownlint`, `lefthook-markdownlint-agentic`, and `lefthook-yamllint` unavailable.
-    Fixed by adding the fragment materialization's packages to the app runtime so every assembled hook command is present by construction, and removing the now-redundant standalone wrapper inputs.
+9. **CI coherence wrappers missing from the confirm app PATH**: The `confirm` app assembled hooks but its `runtimeInputs` lacked `lefthook-markdownlint`, `lefthook-markdownlint-agentic`, and `lefthook-yamllint`.
+    Fixed by adding fragment packages to the app runtime and removing redundant wrapper inputs.
 
 10. **Pin refresh made `flake.lock` exceed the file-size guardrail**: Independent recursive `nixpkgs-lock` and `set-and-setting` inputs duplicated the transitive flake graph, growing the lockfile to 120,413 bytes.
     Fixed by pinning `nixpkgs` directly and making both compatibility inputs of `set-and-setting` follow it, reducing the lock graph without relaxing the 65,536-byte limit.
