@@ -38,6 +38,7 @@
             _name: shell:
             shell.overrideAttrs (old: {
               buildInputs = (old.buildInputs or [ ]) ++ [
+                nixpkgs.legacyPackages.${system}.bats
                 nixpkgs.legacyPackages.${system}.taplo
                 consumer.packages.${system}.lefthook-typos
               ];
