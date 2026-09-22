@@ -1,5 +1,5 @@
 {
-  description = "CHANGEME";
+  description = "Lefthook-compatible typos spell checker packaged as a Nix flake";
 
   nixConfig = {
     extra-substituters = [ "https://pr0d1r2.cachix.org" ];
