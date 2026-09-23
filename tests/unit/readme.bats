@@ -7,6 +7,30 @@ setup() {
     PROJECT_ROOT="$BATS_TEST_DIRNAME/../.."
     README="$PROJECT_ROOT/README.md"
     LEFTHOOK="$PROJECT_ROOT/lefthook.yml"
+    DISCLAIMER="$PROJECT_ROOT/docs/LLM-DISCLAIMER.md"
+}
+
+@test "README discloses autonomous tending with an ordered marker block" {
+    run bash -c "grep -nF '<!-- hallucinogen:autonomy-disclaimer start -->' '$README'"
+    assert_success
+    start_line="${output%%:*}"
+
+    run bash -c "grep -nF '<!-- hallucinogen:autonomy-disclaimer end -->' '$README'"
+    assert_success
+    end_line="${output%%:*}"
+
+    [ "$start_line" -lt "$end_line" ]
+}
+
+@test "README autonomy block links to the repository disclaimer" {
+    run grep -qF '[LLM-DISCLAIMER](docs/LLM-DISCLAIMER.md)' "$README"
+    assert_success
+}
+
+@test "repository disclaimer exists and identifies autonomous tending" {
+    [ -f "$DISCLAIMER" ]
+    run grep -qi 'autonomous loop' "$DISCLAIMER"
+    assert_success
 }
 
 @test "README.md has lefthook checks section" {
