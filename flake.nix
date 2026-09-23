@@ -36,6 +36,9 @@
       ];
       src = ./.;
       extraPackages = pkgs: {
+        # The generated lefthook configuration wraps every command with
+        # `timeout`; expose coreutils to hermetic check/dev-shell consumers.
+        inherit (pkgs) coreutils;
         default = pkgs.writeShellApplication {
           name = "lefthook-typos";
           runtimeInputs = [ pkgs.typos ];

@@ -116,3 +116,5 @@ This registers `typos` commands for both `pre-commit` and `pre-push`.
     Fixed by pinning `nixpkgs` directly and making both compatibility inputs of `set-and-setting` follow it, reducing the lock graph without relaxing the 65,536-byte limit.
 
 11. **CI flake manifest rejected `let` outputs**: Fixed with `set-and-setting.lib.mkConsumerFlake`.
+
+12. CI 127: add `timeout`.
