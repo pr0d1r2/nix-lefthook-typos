@@ -6,13 +6,24 @@
 > what it may not, and what to check before trusting anything in this tree.
 <!-- hallucinogen:autonomy-disclaimer end -->
 
-[![CI](https://github.com/pr0d1r2/nix-lefthook-typos/actions/workflows/ci.yml/badge.svg)](https://github.com/pr0d1r2/nix-lefthook-typos/actions/workflows/ci.yml)
+[![CI](https://github.com/pr0d1r2/nix-lefthook-typos/actions/workflows/ci.yml/badge.svg)](https://github.com/pr0d1r2/nix-lefthook-typos/actions/workflows/ci.yml) [![NixOS 26.05](https://img.shields.io/badge/NixOS-26.05-blue.svg?logo=nixos)](https://nixos.org)
 
 > This code is LLM-generated and validated through an automated integration process using [lefthook](https://github.com/evilmartians/lefthook) git hooks, [bats](https://github.com/bats-core/bats-core) unit tests, and GitHub Actions CI.
 
 Lefthook-compatible [typos](https://github.com/crate-ci/typos) spell checker, packaged as a Nix flake.
 
 Catches spelling mistakes in source code and documentation. Filters non-existent files from staged arguments and runs typos on the rest. Exits 0 when no files are found.
+
+## Architecture
+
+```mermaid
+flowchart LR
+  consumer["consumer lefthook.yml"] -->|"remotes"| remote["lefthook-remote.yml"]
+  remote -->|"pre-commit → {staged_files}"| lefthook_typos["lefthook-typos"]
+  remote -->|"pre-push → {push_files}"| lefthook_typos["lefthook-typos"]
+  lefthook_typos -->|"runs"| tool["typos"]
+  lefthook_typos -->|"exit status"| consumer
+```
 
 ## Usage
 
@@ -109,6 +120,19 @@ If not using direnv, enter the shell manually:
 ```bash
 nix develop
 bats tests/unit/
+```
+
+### Development architecture
+
+```mermaid
+flowchart LR
+  envrc[".envrc"] -->|"use flake"| flake["flake.nix"]
+  flake -->|"mkConsumerFlake"| sas["set-and-setting"]
+  flake -->|"devShell"| shell["dev shell"]
+  shell -->|"on entry"| devsh["dev.sh"]
+  sas -->|"assembled hooks"| lh["lefthook.yml"]
+  lh -->|"pre-commit / pre-push"| checks["linters, bats, nix flake check"]
+  ci[".github/workflows/ci.yml"] -->|"guardrails.yml"| checks
 ```
 
 ## License
