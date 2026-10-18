@@ -17,4 +17,4 @@ if [ ${#files[@]} -eq 0 ]; then
   exit 0
 fi
 
-exec typos "${files[@]}"
+exec typos --force-exclude "${files[@]}"
