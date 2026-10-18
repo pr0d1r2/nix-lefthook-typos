@@ -25,6 +25,18 @@ EOF
     assert_success
 }
 
+@test "typos config excludes apply to explicitly passed files" {
+    cat > "$TMP/_typos.toml" <<'EOF'
+[files]
+extend-exclude = ["excluded.json"]
+EOF
+    typo="al""s"
+    printf '{"h": "1h35rj4yl6yj8f33gic521x5lfz72iibgbkriq94%s1zb5r8qzc"}\n' "$typo" > "$TMP/excluded.json"
+
+    run bash -c "cd '$TMP' && lefthook-typos excluded.json"
+    assert_success
+}
+
 @test "file with typos fails" {
     typo="spel""ing"
     printf 'This file has a %s mistake.\n' "$typo" > "$TMP/typo.txt"
